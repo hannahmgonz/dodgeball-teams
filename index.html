@@ -42,7 +42,6 @@
     .wrap{
       max-width: 980px;
       margin: 0 auto;
-      /* Safe-area padding (notch/home bar friendly) */
       padding-left: max(14px, env(safe-area-inset-left));
       padding-right: max(14px, env(safe-area-inset-right));
       padding-top: max(16px, env(safe-area-inset-top));
@@ -221,7 +220,7 @@
       font-weight: 950;
       cursor:pointer;
       -webkit-tap-highlight-color: transparent;
-      min-height: 44px; /* still ensures good tap size */
+      min-height: 44px;
     }
     .chip.on{
       border-color: rgba(124,92,255,.95);
@@ -286,16 +285,13 @@
       font-weight: 800;
     }
 
-    /* Sticky action bar */
     .stickybar{
       position: sticky;
       top: max(10px, env(safe-area-inset-top));
       z-index: 50;
-
       margin-top: 10px;
       padding: 10px;
       border-radius: 16px;
-
       background: rgba(11,12,16,.78);
       border: 1px solid rgba(35,38,52,.7);
       backdrop-filter: blur(10px);
@@ -352,7 +348,7 @@
     <header>
       <div>
         <h1>Dodgeball Team Shuffler</h1>
-        <div class="subtitle">Rank arm strength 1–4 (1 strongest). Check who’s playing, generate, copy to group chat.</div>
+        <div class="subtitle">Rank 1–4 (1 strongest)</div>
       </div>
 
       <div class="tabs" role="tablist" aria-label="App tabs">
@@ -377,24 +373,15 @@
             <input type="checkbox" id="toggleAllTonight" />
             <span>Everyone playing tonight</span>
           </label>
-
-          <div class="row">
-            <button id="randomizeTies" class="ghost">Randomize ties</button>
-          </div>
         </div>
 
-        <div id="empty" class="hint" style="margin-top:12px;">No players yet — tap <strong>+ Add player</strong>.</div>
+        <div id="empty" class="hint" style="margin-top:12px; display:none;"></div>
         <div class="list" id="list"></div>
       </div>
 
       <div class="card">
-        <div class="row" style="justify-content:space-between; align-items:flex-end;">
-          <div class="grow">
-            <div class="hint"><strong>Ranking:</strong> Everyone is ranked together by arm strength (1–4).</div>
-          </div>
-          <div class="row">
-            <button class="secondary" id="goTeams">Go to Teams →</button>
-          </div>
+        <div class="row" style="justify-content:flex-end; align-items:flex-end;">
+          <button class="secondary" id="goTeams">Go to Teams →</button>
         </div>
       </div>
     </section>
@@ -431,19 +418,6 @@
             <div id="teamB" class="hint">—</div>
           </div>
         </div>
-
-        <div class="hint" style="margin-top:12px;">
-          Tip: If totals feel off, tap <strong>Shuffle again</strong> (it reshuffles tie ranks + rebalances).
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="row" style="justify-content:space-between;">
-          <div class="hint"><strong>Quick actions</strong></div>
-          <div class="row">
-            <button class="ghost" id="backRoster">← Back to Roster</button>
-          </div>
-        </div>
       </div>
     </section>
   </div>
@@ -473,7 +447,6 @@
           <div class="pill" data-rank="3" aria-pressed="false">3</div>
           <div class="pill" data-rank="4" aria-pressed="false">4 (weakest)</div>
         </div>
-        <div class="hint" style="margin-top:8px;">Equal strength? Give the same rank — we’ll randomize ties fairly.</div>
       </div>
 
       <div class="divider"></div>
@@ -631,7 +604,8 @@ function renderRoster(){
   const list = $("list");
   list.innerHTML = "";
 
-  $("empty").style.display = players.length ? "none" : "block";
+  // no empty message (per request)
+  $("empty").style.display = "none";
 
   // reflect "everyone playing tonight" toggle
   const allActive = players.length > 0 && players.every(p => !!p.active);
@@ -859,11 +833,12 @@ function generateTeams(){
   lastTeams = { teamA, teamB };
 
   const diff = Math.abs(sumScore(teamA) - sumScore(teamB));
-  $("warn").textContent = `Tonight: ${tonight.length} players • Team strength difference: ${diff}`;
+  $("warn").textContent = `Tonight: ${tonight.length} • Difference: ${diff}`;
   $("warn").style.display = "block";
 }
 
 function shuffleAgain(){
+  // kept (still needed) — ensures fair randomness among tied ranks
   players = players.map(p => ({ ...p, _rand: Math.random() }));
   save();
   generateTeams();
@@ -898,7 +873,6 @@ async function copyTeams(){
     await navigator.clipboard.writeText(text);
     toast("Copied ✅");
   } catch {
-    // iOS may block clipboard on file://; fallback prompt
     prompt("Copy teams:", text);
   }
 }
@@ -909,7 +883,6 @@ async function copyTeams(){
 $("tabRoster").addEventListener("click", () => showTab("roster"));
 $("tabTeams").addEventListener("click", () => showTab("teams"));
 $("goTeams").addEventListener("click", () => showTab("teams"));
-$("backRoster").addEventListener("click", () => showTab("roster"));
 
 $("openAdd").addEventListener("click", () => openModal(null));
 $("closeModal").addEventListener("click", closeModal);
@@ -942,7 +915,7 @@ $("savePlayer").addEventListener("click", () => {
       name,
       rank: selectedRank,
       gender: selectedGender,
-      active: true,     // default: playing tonight when you add
+      active: true,
       _rand: Math.random()
     });
   } else {
@@ -969,13 +942,6 @@ $("toggleAllTonight").addEventListener("change", (e) => {
   const on = e.target.checked;
   players = players.map(p => ({ ...p, active: on }));
   save();
-  renderRoster();
-});
-
-$("randomizeTies").addEventListener("click", () => {
-  players = players.map(p => ({ ...p, _rand: Math.random() }));
-  save();
-  toast("Ties randomized");
   renderRoster();
 });
 
