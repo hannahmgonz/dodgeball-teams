@@ -1,0 +1,1009 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0c10" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Dodgeball Teams" />
+  <title>Dodgeball Team Shuffler</title>
+
+  <style>
+    :root{
+      --bg:#0b0c10;
+      --text:#f3f4f6;
+      --muted:#a7adbb;
+      --line:#232634;
+      --accent:#7c5cff;
+      --accent2:#2dd4bf;
+      --danger:#ff4d6d;
+      --shadow: 0 18px 45px rgba(0,0,0,.45);
+      --radius: 18px;
+    }
+
+    *{ box-sizing:border-box; }
+
+    html, body { height: 100%; }
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:
+        radial-gradient(1200px 600px at 30% -10%, rgba(124,92,255,.25), transparent 55%),
+        radial-gradient(900px 500px at 90% 0%, rgba(45,212,191,.18), transparent 45%),
+        var(--bg);
+      color:var(--text);
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Prevent iOS zoom on input focus */
+    input, button { font-size: 16px; }
+
+    .wrap{
+      max-width: 980px;
+      margin: 0 auto;
+      /* Safe-area padding (notch/home bar friendly) */
+      padding-left: max(14px, env(safe-area-inset-left));
+      padding-right: max(14px, env(safe-area-inset-right));
+      padding-top: max(16px, env(safe-area-inset-top));
+      padding-bottom: max(40px, env(safe-area-inset-bottom));
+    }
+
+    header{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom: 12px;
+    }
+    h1{ margin:0; font-size: 22px; letter-spacing:.2px; }
+    .subtitle{ color:var(--muted); font-size: 13px; margin-top:6px; }
+
+    .tabs{
+      display:flex;
+      gap:10px;
+      padding: 6px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      width: fit-content;
+      box-shadow: var(--shadow);
+    }
+    .tab{
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 900;
+      letter-spacing:.2px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 44px;
+    }
+    .tab.active{
+      color: var(--text);
+      background: linear-gradient(180deg, rgba(124,92,255,.95), rgba(124,92,255,.78));
+      box-shadow: 0 10px 25px rgba(124,92,255,.22);
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      margin-top: 12px;
+    }
+
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .grow{ flex:1 1 220px; }
+
+    label{ display:block; font-size:12px; color:var(--muted); margin: 0 0 6px; }
+
+    input{
+      width:100%;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(10,12,18,.8);
+      color: var(--text);
+      outline:none;
+    }
+    input::placeholder{ color: rgba(167,173,187,.7); }
+
+    button{
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      padding: 11px 12px;
+      border-radius: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .06s ease, background .15s ease, border-color .15s ease;
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 44px;
+    }
+    button:active{ transform: scale(.98); }
+    button.primary{
+      background: linear-gradient(180deg, rgba(124,92,255,.95), rgba(124,92,255,.78));
+      border-color: rgba(124,92,255,.9);
+    }
+    button.secondary{
+      background: rgba(45,212,191,.12);
+      border-color: rgba(45,212,191,.35);
+      color: #cffff7;
+    }
+    button.danger{
+      background: rgba(255,77,109,.14);
+      border-color: rgba(255,77,109,.35);
+      color: #ffd0da;
+    }
+    button.ghost{ background: transparent; }
+
+    .pillbar{ display:flex; gap:8px; flex-wrap:wrap; }
+    .pill{
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.035);
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 13px;
+      color: var(--text);
+      cursor:pointer;
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 44px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .pill[aria-pressed="true"]{
+      border-color: rgba(124,92,255,.9);
+      background: rgba(124,92,255,.22);
+    }
+
+    .hint{ color:var(--muted); font-size: 13px; }
+
+    .list{
+      margin-top: 10px;
+      display: grid;
+      gap: 10px;
+    }
+    .item{
+      background: rgba(10,12,18,.55);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+      display:flex;
+      justify-content:space-between;
+      gap: 10px;
+      align-items:center;
+    }
+    .item-left{ min-width: 0; }
+    .name{
+      font-weight: 950;
+      letter-spacing: .2px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      max-width: 70vw;
+    }
+    .meta{
+      display:flex;
+      gap: 8px;
+      margin-top: 6px;
+      flex-wrap:wrap;
+      color: var(--muted);
+      font-size: 12px;
+      align-items:center;
+    }
+    .tag{
+      padding: 4px 8px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      border-radius: 999px;
+      font-weight: 800;
+    }
+
+    .rankchips{ display:flex; gap:6px; }
+
+    .chip{
+      width: 40px;
+      height: 36px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      font-weight: 950;
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 44px; /* still ensures good tap size */
+    }
+    .chip.on{
+      border-color: rgba(124,92,255,.95);
+      background: rgba(124,92,255,.25);
+      box-shadow: 0 10px 25px rgba(124,92,255,.15);
+    }
+
+    .item-actions{ display:flex; gap:8px; flex-shrink:0; }
+
+    .toggle{
+      display:flex; align-items:center; gap:10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.02);
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 44px;
+    }
+    .toggle input{ width: 18px; height: 18px; margin:0; }
+    .toggle span{ font-weight: 900; }
+
+    .cols{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    @media (max-width: 860px){
+      .cols{ grid-template-columns: 1fr; }
+      header{ align-items:flex-start; flex-direction:column; }
+    }
+
+    .team{
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(10,12,18,.55);
+    }
+    .team h3{ margin:0 0 8px; }
+    .sum{ color: var(--muted); font-size: 13px; margin-bottom: 10px; font-weight: 800;}
+    .playerline{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      padding: 8px 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(35,38,52,.65);
+      background: rgba(255,255,255,.02);
+      margin-top: 8px;
+    }
+    .playerline small{ color: var(--muted); font-weight:900; }
+
+    .warn{
+      margin-top: 10px;
+      border: 1px solid rgba(124,92,255,.35);
+      background: rgba(124,92,255,.12);
+      padding: 10px 12px;
+      border-radius: 14px;
+      color: #e8e1ff;
+      display:none;
+      font-weight: 800;
+    }
+
+    /* Sticky action bar */
+    .stickybar{
+      position: sticky;
+      top: max(10px, env(safe-area-inset-top));
+      z-index: 50;
+
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 16px;
+
+      background: rgba(11,12,16,.78);
+      border: 1px solid rgba(35,38,52,.7);
+      backdrop-filter: blur(10px);
+    }
+
+    /* Modal */
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.55);
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      padding: 14px;
+    }
+    .modal{
+      width: min(720px, 100%);
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(20,22,29,.98), rgba(12,14,20,.98));
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+    .modal-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom: 10px;
+    }
+    .modal-title{ font-weight:950; }
+    .divider{ height:1px; background: var(--line); margin: 12px 0; }
+
+    /* Toast */
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: max(18px, env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      background: rgba(20,22,29,.95);
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      border-radius: 999px;
+      color: var(--text);
+      box-shadow: var(--shadow);
+      display:none;
+      font-weight: 900;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Dodgeball Team Shuffler</h1>
+        <div class="subtitle">Rank arm strength 1–4 (1 strongest). Check who’s playing, generate, copy to group chat.</div>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="App tabs">
+        <button class="tab active" id="tabRoster" role="tab" aria-selected="true">Roster</button>
+        <button class="tab" id="tabTeams" role="tab" aria-selected="false">Teams</button>
+      </div>
+    </header>
+
+    <!-- ROSTER TAB -->
+    <section id="pageRoster">
+      <div class="card">
+        <div class="row" style="justify-content:space-between;">
+          <div class="hint"><strong>Regulars</strong> <span id="countBadge" class="tag">0</span></div>
+          <div class="row">
+            <button class="primary" id="openAdd">+ Add player</button>
+            <button id="clearAll" class="danger">Clear</button>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:12px; justify-content:space-between;">
+          <label class="toggle" style="margin:0;">
+            <input type="checkbox" id="toggleAllTonight" />
+            <span>Everyone playing tonight</span>
+          </label>
+
+          <div class="row">
+            <button id="randomizeTies" class="ghost">Randomize ties</button>
+          </div>
+        </div>
+
+        <div id="empty" class="hint" style="margin-top:12px;">No players yet — tap <strong>+ Add player</strong>.</div>
+        <div class="list" id="list"></div>
+      </div>
+
+      <div class="card">
+        <div class="row" style="justify-content:space-between; align-items:flex-end;">
+          <div class="grow">
+            <div class="hint"><strong>Ranking:</strong> Everyone is ranked together by arm strength (1–4).</div>
+          </div>
+          <div class="row">
+            <button class="secondary" id="goTeams">Go to Teams →</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TEAMS TAB -->
+    <section id="pageTeams" style="display:none;">
+      <div class="card">
+        <div class="row" style="justify-content:space-between;">
+          <div class="hint">
+            <strong>Tonight</strong>
+            <span class="tag" id="tonightCount">0</span>
+          </div>
+        </div>
+
+        <div class="stickybar">
+          <div class="row">
+            <button class="primary" id="gen">Generate</button>
+            <button id="shuffle">Shuffle again</button>
+            <button class="secondary" id="copy">Copy for chat</button>
+          </div>
+        </div>
+
+        <div id="warn" class="warn"></div>
+
+        <div class="cols">
+          <div class="team">
+            <h3>📘 Team 1</h3>
+            <div class="sum">Total strength score: <span id="sumA">0</span></div>
+            <div id="teamA" class="hint">—</div>
+          </div>
+          <div class="team">
+            <h3>📘 Team 2</h3>
+            <div class="sum">Total strength score: <span id="sumB">0</span></div>
+            <div id="teamB" class="hint">—</div>
+          </div>
+        </div>
+
+        <div class="hint" style="margin-top:12px;">
+          Tip: If totals feel off, tap <strong>Shuffle again</strong> (it reshuffles tie ranks + rebalances).
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row" style="justify-content:space-between;">
+          <div class="hint"><strong>Quick actions</strong></div>
+          <div class="row">
+            <button class="ghost" id="backRoster">← Back to Roster</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div class="modal-backdrop" id="backdrop">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <div class="modal-title" id="modalTitle">Add player</div>
+        <button id="closeModal" class="ghost">Close</button>
+      </div>
+
+      <div class="row">
+        <div class="grow">
+          <label>Name</label>
+          <input id="pName" placeholder="e.g., Brodie" inputmode="text" autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div>
+        <label>Arm strength rank</label>
+        <div class="pillbar" id="rankGroup" role="group" aria-label="Rank">
+          <div class="pill" data-rank="1" aria-pressed="true">1 (strongest)</div>
+          <div class="pill" data-rank="2" aria-pressed="false">2</div>
+          <div class="pill" data-rank="3" aria-pressed="false">3</div>
+          <div class="pill" data-rank="4" aria-pressed="false">4 (weakest)</div>
+        </div>
+        <div class="hint" style="margin-top:8px;">Equal strength? Give the same rank — we’ll randomize ties fairly.</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div>
+        <label>Gender (optional)</label>
+        <div class="pillbar" id="genderGroup" role="group" aria-label="Gender">
+          <div class="pill" data-g="F" aria-pressed="false">Female</div>
+          <div class="pill" data-g="M" aria-pressed="false">Male</div>
+          <div class="pill" data-g="NB" aria-pressed="false">Non-binary</div>
+          <div class="pill" data-g="" aria-pressed="true">Not set</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="row" style="justify-content:space-between;">
+        <button id="savePlayer" class="primary">Save</button>
+        <button id="deletePlayer" class="danger" style="display:none;">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Copied ✅</div>
+
+<script>
+/* -----------------------------
+   Storage
+------------------------------*/
+const STORAGE_KEY = "dodgeball_roster_v1";
+
+/* -----------------------------
+   Data model
+   players: { id, name, rank(1-4), gender("F"/"M"/"NB"/""), active(bool), _rand(number) }
+------------------------------*/
+let players = [];
+let nextId = 1;
+
+/* -----------------------------
+   UI State
+------------------------------*/
+let editingId = null;
+let selectedRank = 1;
+let selectedGender = "";
+
+/* -----------------------------
+   Helpers
+------------------------------*/
+function $(id){ return document.getElementById(id); }
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+
+function genderLabel(g){
+  if (g === "F") return "Female";
+  if (g === "M") return "Male";
+  if (g === "NB") return "Non-binary";
+  return "";
+}
+
+// rank 1 strongest; convert to score where higher means stronger
+function scoreFromRank(rank){ return 5 - rank; } // 1->4, 4->1
+
+function sumScore(list){
+  return list.reduce((a,p) => a + scoreFromRank(p.rank), 0);
+}
+
+function strongestFirstSort(a,b){
+  // strongest first: rank asc; ties by random
+  return a.rank - b.rank || ((a._rand ?? 0) - (b._rand ?? 0));
+}
+
+function setPressed(groupEl, predicateFn){
+  [...groupEl.querySelectorAll(".pill")].forEach(p => {
+    p.setAttribute("aria-pressed", predicateFn(p) ? "true" : "false");
+  });
+}
+
+function toast(msg){
+  const t = $("toast");
+  t.textContent = msg;
+  t.style.display = "block";
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => t.style.display = "none", 1600);
+}
+
+/* -----------------------------
+   Persistence
+------------------------------*/
+function save(){
+  const payload = {
+    nextId,
+    players: players.map(p => ({
+      id: p.id,
+      name: p.name,
+      rank: p.rank,
+      gender: p.gender,
+      active: !!p.active,
+      _rand: (typeof p._rand === "number") ? p._rand : Math.random()
+    }))
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+}
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (!data || !Array.isArray(data.players)) return;
+    players = data.players;
+    nextId = Number(data.nextId || (players.length + 1));
+  } catch {
+    // ignore corrupted storage
+  }
+}
+
+/* -----------------------------
+   Tabs
+------------------------------*/
+function showTab(which){
+  const roster = $("pageRoster");
+  const teams  = $("pageTeams");
+
+  const tabRoster = $("tabRoster");
+  const tabTeams  = $("tabTeams");
+
+  if (which === "teams"){
+    roster.style.display = "none";
+    teams.style.display = "block";
+    tabRoster.classList.remove("active");
+    tabTeams.classList.add("active");
+    tabRoster.setAttribute("aria-selected","false");
+    tabTeams.setAttribute("aria-selected","true");
+    updateTonightCount();
+  } else {
+    teams.style.display = "none";
+    roster.style.display = "block";
+    tabTeams.classList.remove("active");
+    tabRoster.classList.add("active");
+    tabTeams.setAttribute("aria-selected","false");
+    tabRoster.setAttribute("aria-selected","true");
+  }
+}
+
+/* -----------------------------
+   Roster render
+------------------------------*/
+function renderRoster(){
+  $("countBadge").textContent = players.length;
+
+  const list = $("list");
+  list.innerHTML = "";
+
+  $("empty").style.display = players.length ? "none" : "block";
+
+  // reflect "everyone playing tonight" toggle
+  const allActive = players.length > 0 && players.every(p => !!p.active);
+  $("toggleAllTonight").checked = allActive;
+
+  players.forEach(p => {
+    const div = document.createElement("div");
+    div.className = "item";
+
+    const rankChips = [1,2,3,4].map(r => {
+      const on = (p.rank === r) ? "on" : "";
+      return `<div class="chip ${on}" data-r="${r}" title="Set rank ${r}">${r}</div>`;
+    }).join("");
+
+    div.innerHTML = `
+      <div class="item-left">
+        <div class="row" style="justify-content:space-between;">
+          <div class="name">${escapeHtml(p.name)}</div>
+        </div>
+
+        <div class="meta">
+          <label class="toggle" style="margin:0; padding:6px 10px;">
+            <input type="checkbox" data-active="${p.id}" ${p.active ? "checked" : ""} />
+            <span>Playing tonight</span>
+          </label>
+
+          <span class="tag">${p.gender ? genderLabel(p.gender) : "Gender: —"}</span>
+
+          <span class="tag">Tap rank →</span>
+          <span class="rankchips" data-rankchips="${p.id}">${rankChips}</span>
+        </div>
+      </div>
+
+      <div class="item-actions">
+        <button data-edit="${p.id}">Edit</button>
+        <button class="danger" data-del="${p.id}">Del</button>
+      </div>
+    `;
+
+    // active checkbox
+    div.querySelector(`[data-active="${p.id}"]`).addEventListener("change", (e) => {
+      const id = p.id;
+      const checked = e.target.checked;
+      players = players.map(x => x.id === id ? { ...x, active: checked } : x);
+      save();
+      renderRoster();
+    });
+
+    // rank chips
+    div.querySelectorAll(`[data-rankchips="${p.id}"] .chip`).forEach(chip => {
+      chip.addEventListener("click", () => {
+        const r = Number(chip.dataset.r);
+        players = players.map(x => x.id === p.id ? { ...x, rank: r } : x);
+        save();
+        renderRoster();
+      });
+    });
+
+    // edit/delete
+    div.querySelector('[data-edit]').addEventListener("click", (e) => {
+      openModal(Number(e.target.dataset.edit));
+    });
+    div.querySelector('[data-del]').addEventListener("click", (e) => {
+      const id = Number(e.target.dataset.del);
+      players = players.filter(x => x.id !== id);
+      save();
+      renderRoster();
+    });
+
+    list.appendChild(div);
+  });
+
+  updateTonightCount();
+}
+
+/* -----------------------------
+   Modal
+------------------------------*/
+function openModal(editId){
+  editingId = editId ?? null;
+
+  $("backdrop").style.display = "flex";
+  setTimeout(() => $("pName").focus(), 30);
+
+  if (editingId == null){
+    $("modalTitle").textContent = "Add player";
+    $("deletePlayer").style.display = "none";
+    $("pName").value = "";
+    selectedRank = 1;
+    selectedGender = "";
+    setPressed($("rankGroup"), el => el.dataset.rank === "1");
+    setPressed($("genderGroup"), el => (el.dataset.g || "") === "");
+  } else {
+    const p = players.find(x => x.id === editingId);
+    if (!p) return;
+
+    $("modalTitle").textContent = "Edit player";
+    $("deletePlayer").style.display = "inline-block";
+    $("pName").value = p.name;
+    selectedRank = p.rank;
+    selectedGender = p.gender;
+
+    setPressed($("rankGroup"), el => el.dataset.rank === String(selectedRank));
+    setPressed($("genderGroup"), el => (el.dataset.g || "") === String(selectedGender));
+  }
+}
+
+function closeModal(){
+  $("backdrop").style.display = "none";
+}
+
+/* -----------------------------
+   Team generation (snake + optimizer)
+------------------------------*/
+function snakeDraft(sortedList, teamA, teamB){
+  // A, B, B, A, A, B... (two-pick snake)
+  let direction = 1;
+  let picks = 0;
+
+  for (const p of sortedList){
+    const pickA = (direction === 1 && picks === 0) || (direction === -1 && picks === 1);
+    (pickA ? teamA : teamB).push(p);
+
+    picks++;
+    if (picks === 2){ picks = 0; direction *= -1; }
+  }
+}
+
+function teamDiff(teamA, teamB){
+  return sumScore(teamA) - sumScore(teamB); // + means A stronger
+}
+
+function optimizeTeamsBySwaps(teamA, teamB, opts = {}){
+  const maxPasses = opts.maxPasses ?? 30;
+
+  for (let pass = 0; pass < maxPasses; pass++){
+    const diff = teamDiff(teamA, teamB);
+    const abs0 = Math.abs(diff);
+    if (abs0 === 0) break;
+
+    let best = null;
+
+    for (let i = 0; i < teamA.length; i++){
+      for (let j = 0; j < teamB.length; j++){
+        const a = teamA[i];
+        const b = teamB[j];
+
+        const diff2 = diff + 2 * (scoreFromRank(b.rank) - scoreFromRank(a.rank));
+        const abs2 = Math.abs(diff2);
+
+        if (abs2 < abs0 && (!best || abs2 < best.newAbs)){
+          best = { i, j, newAbs: abs2 };
+          if (abs2 === 0) break;
+        }
+      }
+      if (best && best.newAbs === 0) break;
+    }
+
+    if (!best) break;
+
+    const tmp = teamA[best.i];
+    teamA[best.i] = teamB[best.j];
+    teamB[best.j] = tmp;
+  }
+}
+
+let lastTeams = { teamA: [], teamB: [] };
+
+function getTonightPlayers(){
+  return players.filter(p => !!p.active);
+}
+
+function updateTonightCount(){
+  $("tonightCount").textContent = getTonightPlayers().length;
+}
+
+function renderTeams(teamA, teamB){
+  $("sumA").textContent = String(sumScore(teamA));
+  $("sumB").textContent = String(sumScore(teamB));
+
+  $("teamA").innerHTML = teamA.length ? teamA.map(p => line(p)).join("") : "—";
+  $("teamB").innerHTML = teamB.length ? teamB.map(p => line(p)).join("") : "—";
+
+  function line(p){
+    const g = p.gender ? genderLabel(p.gender) : "—";
+    const s = scoreFromRank(p.rank);
+    return `
+      <div class="playerline">
+        <div>${escapeHtml(p.name)} <small>(${g})</small></div>
+        <div><small>R${p.rank} • ${s}</small></div>
+      </div>
+    `;
+  }
+}
+
+function generateTeams(){
+  const tonight = getTonightPlayers();
+
+  $("warn").style.display = "none";
+  $("warn").textContent = "";
+
+  if (tonight.length < 2){
+    $("warn").textContent = "Select at least 2 players as “Playing tonight” on the Roster tab.";
+    $("warn").style.display = "block";
+    renderTeams([], []);
+    lastTeams = { teamA: [], teamB: [] };
+    return;
+  }
+
+  // Copy and ensure tie-break keys exist
+  let list = tonight.map(p => ({ ...p, _rand: (typeof p._rand === "number") ? p._rand : Math.random() }));
+
+  const teamA = [];
+  const teamB = [];
+
+  list.sort(strongestFirstSort);
+  snakeDraft(list, teamA, teamB);
+
+  // Optimize only if equal sizes
+  if (teamA.length === teamB.length){
+    optimizeTeamsBySwaps(teamA, teamB, { maxPasses: 30 });
+  }
+
+  renderTeams(teamA, teamB);
+  lastTeams = { teamA, teamB };
+
+  const diff = Math.abs(sumScore(teamA) - sumScore(teamB));
+  $("warn").textContent = `Tonight: ${tonight.length} players • Team strength difference: ${diff}`;
+  $("warn").style.display = "block";
+}
+
+function shuffleAgain(){
+  players = players.map(p => ({ ...p, _rand: Math.random() }));
+  save();
+  generateTeams();
+}
+
+/* -----------------------------
+   Chat formatting + copy
+------------------------------*/
+function formatTeamsForChat(teamA, teamB){
+  const lines = [];
+  lines.push("📘 Team 1");
+  lines.push("—");
+  teamA.forEach((p, i) => lines.push(`${i+1}. ${p.name}`));
+  lines.push("");
+  lines.push("📘 Team 2");
+  lines.push("—");
+  teamB.forEach((p, i) => lines.push(`${i+1}. ${p.name}`));
+  return lines.join("\n");
+}
+
+async function copyTeams(){
+  if (!lastTeams.teamA.length || !lastTeams.teamB.length){
+    generateTeams();
+  }
+  if (!lastTeams.teamA.length || !lastTeams.teamB.length){
+    return;
+  }
+
+  const text = formatTeamsForChat(lastTeams.teamA, lastTeams.teamB);
+
+  try{
+    await navigator.clipboard.writeText(text);
+    toast("Copied ✅");
+  } catch {
+    // iOS may block clipboard on file://; fallback prompt
+    prompt("Copy teams:", text);
+  }
+}
+
+/* -----------------------------
+   Events
+------------------------------*/
+$("tabRoster").addEventListener("click", () => showTab("roster"));
+$("tabTeams").addEventListener("click", () => showTab("teams"));
+$("goTeams").addEventListener("click", () => showTab("teams"));
+$("backRoster").addEventListener("click", () => showTab("roster"));
+
+$("openAdd").addEventListener("click", () => openModal(null));
+$("closeModal").addEventListener("click", closeModal);
+$("backdrop").addEventListener("click", (e) => { if (e.target === $("backdrop")) closeModal(); });
+
+$("rankGroup").querySelectorAll(".pill").forEach(pill => {
+  pill.addEventListener("click", () => {
+    selectedRank = Number(pill.dataset.rank);
+    setPressed($("rankGroup"), el => el.dataset.rank === String(selectedRank));
+  });
+});
+
+$("genderGroup").querySelectorAll(".pill").forEach(pill => {
+  pill.addEventListener("click", () => {
+    selectedGender = pill.dataset.g || "";
+    setPressed($("genderGroup"), el => (el.dataset.g || "") === selectedGender);
+  });
+});
+
+$("savePlayer").addEventListener("click", () => {
+  const name = $("pName").value.trim();
+  if (!name){
+    toast("Name required");
+    return;
+  }
+
+  if (editingId == null){
+    players.push({
+      id: nextId++,
+      name,
+      rank: selectedRank,
+      gender: selectedGender,
+      active: true,     // default: playing tonight when you add
+      _rand: Math.random()
+    });
+  } else {
+    players = players.map(p => p.id === editingId
+      ? { ...p, name, rank: selectedRank, gender: selectedGender }
+      : p
+    );
+  }
+
+  save();
+  closeModal();
+  renderRoster();
+});
+
+$("deletePlayer").addEventListener("click", () => {
+  if (editingId == null) return;
+  players = players.filter(p => p.id !== editingId);
+  save();
+  closeModal();
+  renderRoster();
+});
+
+$("toggleAllTonight").addEventListener("change", (e) => {
+  const on = e.target.checked;
+  players = players.map(p => ({ ...p, active: on }));
+  save();
+  renderRoster();
+});
+
+$("randomizeTies").addEventListener("click", () => {
+  players = players.map(p => ({ ...p, _rand: Math.random() }));
+  save();
+  toast("Ties randomized");
+  renderRoster();
+});
+
+$("clearAll").addEventListener("click", () => {
+  if (!confirm("Clear the entire roster?")) return;
+  players = [];
+  nextId = 1;
+  save();
+  renderRoster();
+  renderTeams([], []);
+  lastTeams = { teamA: [], teamB: [] };
+});
+
+$("gen").addEventListener("click", generateTeams);
+$("shuffle").addEventListener("click", () => { shuffleAgain(); toast("Shuffled"); });
+$("copy").addEventListener("click", copyTeams);
+
+/* -----------------------------
+   Init
+------------------------------*/
+load();
+if (players.length){
+  players = players.map(p => ({ ...p, _rand: (typeof p._rand === "number") ? p._rand : Math.random() }));
+  save();
+}
+renderRoster();
+renderTeams([], []);
+updateTonightCount();
+</script>
+</body>
+</html>
