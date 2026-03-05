@@ -243,6 +243,12 @@
     .toggle input{ width: 18px; height: 18px; margin:0; }
     .toggle span{ font-weight: 900; }
 
+    /* Compact toggle for per-player checkbox (no text) */
+    .toggle.icononly{
+      padding: 6px 10px;
+      gap:0;
+    }
+
     .cols{
       display:grid;
       grid-template-columns: 1fr 1fr;
@@ -375,7 +381,9 @@
           </label>
         </div>
 
+        <!-- No empty message (by request) -->
         <div id="empty" class="hint" style="margin-top:12px; display:none;"></div>
+
         <div class="list" id="list"></div>
       </div>
 
@@ -627,14 +635,14 @@ function renderRoster(){
         </div>
 
         <div class="meta">
-          <label class="toggle" style="margin:0; padding:6px 10px;">
+          <!-- Checkbox stays, text removed -->
+          <label class="toggle icononly" style="margin:0;">
             <input type="checkbox" data-active="${p.id}" ${p.active ? "checked" : ""} />
-            <span>Playing tonight</span>
           </label>
 
           <span class="tag">${p.gender ? genderLabel(p.gender) : "Gender: —"}</span>
 
-          <span class="tag">Tap rank →</span>
+          <!-- "Tap rank →" removed -->
           <span class="rankchips" data-rankchips="${p.id}">${rankChips}</span>
         </div>
       </div>
@@ -838,7 +846,7 @@ function generateTeams(){
 }
 
 function shuffleAgain(){
-  // kept (still needed) — ensures fair randomness among tied ranks
+  // still useful: reshuffles tie-breaks so tied ranks distribute differently
   players = players.map(p => ({ ...p, _rand: Math.random() }));
   save();
   generateTeams();
